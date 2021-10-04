@@ -1,0 +1,13 @@
+NO_CHATROOM_NAME = {'error_code': 'CHAT-1', 'message': 'name is none'}
+NO_ROOM_PK = {'error_code': 'CHAT-2', 'message': 'room_pk is none'}
+CHATROOM_ALREADY_EXISTS = {'error_code': 'CHAT-3', 'message': 'Chatroom with this name already exists'}
+NO_LAST_MESSAGE = {'error_code': 'CHAT-4', 'message': "Message with pk last_message doesn't exists"}
+LAST_MESSAGE_INT = {'error_code': 'CHAT-5', 'message': "last_message is not int"}
+USER_NOT_ADMIN = {'error_code': 'CHAT-6', 'message': "User (you) is not chatroom admin"}
+NO_USER_WITH_PK = {'error_code': 'CHAT-7', 'message': "User with this pk doesn't exists"}
+USER_IS_NONE = {'error_code': 'CHAT-8', 'message': "user is none"}
+SAME_INVITATION_EXISTS = {'error_code': 'CHAT-9', 'message': "That invitation already exists"}
+INVITATION_DOESNT_EXISTS = {'error_code': 'CHAT-10', 'message': "This invitation doesn't exists"}
+NO_NAME = {'error_code': 'CHAT-10', 'message': "name is none or empty"}
+USER_IS_MEMBER = {'error_code': 'CHAT-11', 'message': "This user is already member"}
+CANT_INVITE_YOURSELF = {'error_code': 'CHAT-12', 'message': "You can't invite yourself"}
