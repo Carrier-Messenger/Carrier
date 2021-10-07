@@ -14,3 +14,5 @@ PASSWORD_TOO_SHORT = {'error_code': 'USER-13',
                       'message': 'This password is too short. It must contain at least 8 characters'}
 PASSWORD_IS_NUMERIC = {'error_code': 'USER-14', 'message': 'This password is entirely numeric'}
 WRONG_PASSWORD = {'error_code': 'USER-15', 'message': 'Password is wrong'}
+WRONG_EMAIL = {'error_code': 'USER-16', 'message': "User with this e-mail dosen't exists"}
+USER_ALREADY_ACTIVE = {'error_code': 'USER-17', 'message': "You are already active"}

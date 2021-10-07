@@ -12,7 +12,7 @@ from .serializer import UserSerializer, MeSerializer
 from friend.serializer import FriendSerializer
 from .imgs import cut
 from . import error_code
-from Messenger.general_functions import validate_offset_and_limit
+from Carrier.general_functions import validate_offset_and_limit
 
 
 class GetUser(APIView):
@@ -51,19 +51,9 @@ class CreateUser(APIView):
             return Response(error_code.NO_LAST_NAME, status=400)
 
         if get_user_model().objects.filter(email=email).exists():
-            user = get_user_model().objects.get(email=email)
-
-            if not user.is_active:
-                user.send_confirmation_email()
-
             return Response(error_code.EMAIL_EXISTS, status=400)
 
         if get_user_model().objects.filter(username=username).exists():
-            user = get_user_model().objects.get(username=username)
-
-            if not user.is_active:
-                user.send_confirmation_email(request.get_host())
-
             return Response(error_code.USERNAME_EXISTS, status=400)
 
         try:
@@ -87,6 +77,28 @@ class CreateUser(APIView):
         user.send_confirmation_email()
 
         return Response(status=201)
+
+
+class SendConfirmationEmail(APIView):
+    def post(self, request):
+        if request.data.get('email') is None:
+            return Response(error_code.NO_EMAIL, status=400)
+
+        email = request.data.get('email')
+
+        if not get_user_model().objects.filter(email=email).exists():
+            return Response(error_code.WRONG_EMAIL, status=400)
+
+        user = get_user_model().objects.get(email=email)
+
+        if user.is_active:
+            return Response(error_code.USER_ALREADY_ACTIVE, status=400)
+
+        user.code.renew()
+
+        user.send_confirmation_email()
+
+        return Response(status=204)
 
 
 class GetUserByName(APIView):

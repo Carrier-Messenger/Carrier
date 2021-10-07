@@ -1,6 +1,6 @@
 import json
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer
 from .models import Message, ChatRoom
 from .serializer import WSMessageSerializer
 

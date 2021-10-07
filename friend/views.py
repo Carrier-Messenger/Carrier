@@ -40,10 +40,6 @@ class RejectFriend(APIView):
 
         sender = get_user_model().objects.get(pk=sender)
         receiver = request.user
-        # try:
-        #     FriendRequest.objects.get(sender=sender, receiver=receiver).decline()
-        # except FriendRequest.DoesNotExist:
-        #     return Response(status=200)
         if FriendRequest.objects.filter(sender=sender, receiver=receiver).exists():
             FriendRequest.objects.get(sender=sender, receiver=receiver).decline()
 
@@ -56,10 +52,6 @@ class CancelRequest(APIView):
     def delete(self, request, receiver):
         receiver = get_user_model().objects.get(pk=receiver)
         sender = request.user
-        # try:
-        #     FriendRequest.objects.get(sender=sender, receiver=receiver).decline()
-        # except FriendRequest.DoesNotExist:
-        #     return Response(status=200)
         if FriendRequest.objects.filter(sender=sender, receiver=receiver).exists():
             FriendRequest.objects.get(sender=sender, receiver=receiver).decline()
 
@@ -87,13 +79,3 @@ class InvitesToMe(APIView):
         serializer = FriendRequestSerializer(invites, many=True, read_only=True)
 
         return Response(serializer.data)
-
-
-# class InvitesFromMe(APIView):
-#     permission_classes = [IsAuthenticated]
-#
-#     def get(self, request):
-#         invites = FriendRequest.objects.filter(sender=request.user)
-#         serializer = FriendRequestSerializer(invites, many=True, read_only=True)
-#
-#         return Response(serializer.data)

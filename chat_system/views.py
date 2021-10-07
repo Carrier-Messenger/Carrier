@@ -5,8 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from Messenger.general_functions import validate_offset_and_limit
+from Carrier.general_functions import validate_offset_and_limit
 from . import error_code
 from .models import ChatRoom, Message, ChatroomInvitation
 from .serializer import GroupSerializer, MessageSerializer, ChatRoomInvitationSerializer, ChatroomUserSerializer

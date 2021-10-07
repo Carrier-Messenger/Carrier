@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import GetUser, GetUserByID, CreateUser, GetUserByName, Authenticate, AddProfilePicture, EditUser, Suicide
-from friend.views import InviteFriend, AcceptFriend, RejectFriend, RemoveFriend, CancelRequest, InvitesToMe
+from .views import *
+from friend.views import *
 
 
 urlpatterns = [
@@ -18,4 +18,5 @@ urlpatterns = [
     path('invites-to-me/', InvitesToMe.as_view()),
     path('edit/', EditUser.as_view()),
     path('delete/', Suicide.as_view()),
+    path('confirmation-email/', SendConfirmationEmail.as_view()),
 ]

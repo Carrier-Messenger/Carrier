@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth import get_user_model
 from .user_manager import UserManager
-from Messenger.settings import DEFAULT_FROM_EMAIL
+from Carrier.settings import DEFAULT_FROM_EMAIL
 from django.core.mail import send_mail
 import random
 import string
@@ -50,6 +50,9 @@ class AuthCode(models.Model):
                 break
 
         return code
+
+    def renew(self):
+        self.code = self.create_auth_code()
 
     def activate(self):
         self.user.is_active = True
