@@ -24,6 +24,5 @@ urlpatterns = [
     path('user/', include('user.urls')),
     path('friend/', include('friend.urls')),
     path('chat/', include('chat_system.urls')),
-    path('api/token/', jwt_views.TokenObtainPairView.as_view()),
-    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view()),
+    path('auth/', include('auth_system.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

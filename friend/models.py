@@ -1,10 +1,9 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 
 
 class FriendList(models.Model):
-    owner = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, related_name='friend_list')
-    friends = models.ManyToManyField(get_user_model(), blank=True, related_name='friends')
+    owner = models.OneToOneField('auth_system.CustomUser', on_delete=models.CASCADE, related_name='friend_list')
+    friends = models.ManyToManyField('auth_system.CustomUser', blank=True, related_name='friends')
 
     def __str__(self):
         return 'Friend list of ' + self.owner.username
@@ -30,9 +29,9 @@ class FriendList(models.Model):
 
 class FriendRequest(models.Model):
     sender = models.ForeignKey(
-        get_user_model(), related_name='sender', on_delete=models.CASCADE)
+        'auth_system.CustomUser', related_name='sender', on_delete=models.CASCADE)
     receiver = models.ForeignKey(
-        get_user_model(), related_name='receiver', on_delete=models.CASCADE)
+        'auth_system.CustomUser', related_name='receiver', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

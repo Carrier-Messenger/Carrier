@@ -2,13 +2,14 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db.models.functions import Concat
 from django.db.models import Value
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializer import UserSerializer, MeSerializer
 from friend.serializer import FriendSerializer
-from friend.models import FriendList
 from .imgs import cut
 from . import error_code
 from Messenger.general_functions import validate_offset_and_limit
@@ -50,16 +51,41 @@ class CreateUser(APIView):
             return Response(error_code.NO_LAST_NAME, status=400)
 
         if get_user_model().objects.filter(email=email).exists():
+            user = get_user_model().objects.get(email=email)
+
+            if not user.is_active:
+                user.send_confirmation_email()
+
             return Response(error_code.EMAIL_EXISTS, status=400)
+
         if get_user_model().objects.filter(username=username).exists():
+            user = get_user_model().objects.get(username=username)
+
+            if not user.is_active:
+                user.send_confirmation_email(request.get_host())
+
             return Response(error_code.USERNAME_EXISTS, status=400)
+
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            if 'This password is too commons.' in e:
+                return Response(error_code.PASSWORD_TOO_COMMON, status=400)
+            if 'This password is too short. It must contain at least 8 characters.' in e:
+                return Response(error_code.PASSWORD_TOO_SHORT)
+            if 'This password is entirely numeric.' in e:
+                return Response(error_code.PASSWORD_IS_NUMERIC, status=400)
 
         user = get_user_model().objects.create_user(first_name=first_name,
                                                     last_name=last_name,
                                                     email=email,
                                                     password=password,
                                                     username=username)
-        FriendList.objects.create(owner=user)
+        user.is_active = False
+        user.save()
+        user.create_code()
+        user.send_confirmation_email()
+
         return Response(status=201)
 
 
@@ -77,6 +103,59 @@ class GetUserByName(APIView):
             serializer = FriendSerializer(users, many=True, context={'request': request})
             return Response(serializer.data)
         return Response(error_code.NO_NAME, status=400)
+
+
+class EditUser(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+
+        if request.data.get('first_name') is not None:
+            user.first_name = request.data.get('first_name')
+        if request.data.get('last_name') is not None:
+            user.last_name = request.data.get('last_name')
+        if request.data.get('new_password') is not None:
+            password = request.data.get('new_password')
+
+            old_password = request.data.get('password')
+
+            if password is None:
+                return Response(error_code.NO_PASSWORD, status=401)
+
+            if not user.check_password(old_password):
+                return Response(error_code.WRONG_PASSWORD, status=401)
+
+            try:
+                validate_password(old_password)
+            except ValidationError as e:
+                if 'This password is too commons.' in e:
+                    return Response(error_code.PASSWORD_TOO_COMMON, status=400)
+                if 'This password is too short. It must contain at least 8 characters.' in e:
+                    return Response(error_code.PASSWORD_TOO_SHORT)
+                if 'This password is entirely numeric.' in e:
+                    return Response(error_code.PASSWORD_IS_NUMERIC, status=400)
+
+            user.set_password(password)
+
+        user.save()
+
+        return Response(status=204)
+
+
+class Suicide(APIView):
+    def delete(self, request):
+        password = request.data.get('password')
+        if password is None:
+            return Response(error_code.NO_PASSWORD, status=401)
+
+        user = request.user
+
+        if not user.check_password(password):
+            return Response(error_code.WRONG_PASSWORD, status=401)
+
+        user.delete()
+        return Response(status=204)
 
 
 class Authenticate(APIView):

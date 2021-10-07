@@ -1,3 +1,15 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import AuthCode
 
-# Create your views here.
+
+class ConfirmEmail(APIView):
+    def get(self, request):
+        code = request.GET.get('code')
+
+        code = get_object_or_404(AuthCode, code=code)
+
+        code.activate()
+
+        return Response(status=200)

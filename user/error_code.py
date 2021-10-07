@@ -9,3 +9,8 @@ OFFSET_IS_NOT_INT = {'error_code': 'USER-8', 'message': 'offset is not int'}
 LIMIT_IS_NOT_INT = {'error_code': 'USER-9', 'message': 'limit is not int'}
 NO_NAME = {'error_code': 'USER-10', 'message': 'name is none'}
 NO_PFP = {'error_code': 'USER-11', 'message': 'pfp is none'}
+PASSWORD_TOO_COMMON = {'error_code': 'USER-12', 'message': 'This password is too common'}
+PASSWORD_TOO_SHORT = {'error_code': 'USER-13',
+                      'message': 'This password is too short. It must contain at least 8 characters'}
+PASSWORD_IS_NUMERIC = {'error_code': 'USER-14', 'message': 'This password is entirely numeric'}
+WRONG_PASSWORD = {'error_code': 'USER-15', 'message': 'Password is wrong'}
