@@ -16,3 +16,5 @@ PASSWORD_IS_NUMERIC = {'error_code': 'USER-14', 'message': 'This password is ent
 WRONG_PASSWORD = {'error_code': 'USER-15', 'message': 'Password is wrong'}
 WRONG_EMAIL = {'error_code': 'USER-16', 'message': "User with this e-mail dosen't exists"}
 USER_ALREADY_ACTIVE = {'error_code': 'USER-17', 'message': "You are already active"}
+INVALID_EMAIL = {'error_code': 'USER-18', 'message': "This is not a valid email adress"}
+NO_EMAIL_CODE = {'error_code': 'USER-19', 'message': "You have not changed your email yet"}

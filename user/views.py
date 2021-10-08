@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models.functions import Concat
 from django.db.models import Value
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
@@ -125,8 +126,20 @@ class EditUser(APIView):
 
         if request.data.get('first_name') is not None:
             user.first_name = request.data.get('first_name')
+
         if request.data.get('last_name') is not None:
             user.last_name = request.data.get('last_name')
+
+        if request.data.get('email') is not None:
+            email = request.data.get('email')
+
+            try:
+                validate_email(email)
+            except ValidationError:
+                return Response(error_code.INVALID_EMAIL, status=400)
+
+            request.user.change_email(email)
+
         if request.data.get('new_password') is not None:
             password = request.data.get('new_password')
 
@@ -153,6 +166,22 @@ class EditUser(APIView):
         user.save()
 
         return Response(status=204)
+
+
+class SendEmailChangeEmail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if not hasattr(user, 'email_code'):
+            return Response(error_code.NO_EMAIL_CODE, status=400)
+
+        user.email_code.renew()
+
+        user.send_email_change_email()
+
+        return Response(status=200)
 
 
 class Suicide(APIView):

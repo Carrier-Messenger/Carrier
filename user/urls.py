@@ -19,4 +19,5 @@ urlpatterns = [
     path('edit/', EditUser.as_view()),
     path('delete/', Suicide.as_view()),
     path('confirmation-email/', SendConfirmationEmail.as_view()),
+    path('send-email-change/', SendEmailChangeEmail.as_view()),
 ]
