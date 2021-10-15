@@ -31,31 +31,54 @@ class ChatroomUserSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     author = FriendSerializer()
+    is_mine = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
-        fields = '__all__'
+        fields = ['id', 'author', 'content', 'created_at', 'is_mine']
+
+    def get_is_mine(self, message):
+        request = self.context.get('request')
+        return request is not None and request.user == message.author
 
 
 class WSMessageSerializer(serializers.ModelSerializer):
+    author = FriendSerializer()
+    is_mine = serializers.SerializerMethodField()
+
     class Meta:
         model = Message
-        fields = '__all__'
+        fields = ['id', 'author', 'content', 'created_at', 'is_mine']
+
+    def get_is_mine(self, message):
+        user = self.context.get('user')
+        return user is not None and user == message.author
 
 
 class GroupSerializer(serializers.ModelSerializer):
     users = FriendSerializer(many=True, read_only=True)
     creators = FriendSerializer(many=True, read_only=True)
+    is_admin = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
         fields = '__all__'
 
+    def get_is_admin(self, group):
+        request = self.context.get('request')
+        return request is not None and request.user in group.creators.all()
+
+
+class SilentGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatRoom
+        fields = ['id', 'name', 'image']
+
 
 class ChatRoomInvitationSerializer(serializers.ModelSerializer):
-    chatroom = GroupSerializer()
-    receiver = FriendSerializer()
+    chatroom = SilentGroupSerializer()
+    sender = FriendSerializer()
 
     class Meta:
         model = ChatroomInvitation
-        fields = ['chatroom', 'receiver']
+        fields = ['chatroom', 'sender']

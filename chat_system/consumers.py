@@ -31,7 +31,10 @@ class ChatConsumer(WebsocketConsumer):
     # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        message = text_data_json.get('message')
+
+        if message is None:
+            self.disconnect()
 
         user = self.scope['user']
         chat_room = ChatRoom.objects.get(pk=self.room_name)
@@ -49,6 +52,6 @@ class ChatConsumer(WebsocketConsumer):
     # Receive message from room group
     def chat_message(self, event):
         message = event['message']
-        serializer = WSMessageSerializer(Message.objects.get(pk=message))
+        serializer = WSMessageSerializer(Message.objects.get(pk=message), context={'user': self.scope['user']})
         # Send message to WebSocket
         self.send(text_data=json.dumps(serializer.data))

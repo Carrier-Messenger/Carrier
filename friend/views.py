@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from .models import FriendRequest, FriendList
 from .serializer import FriendRequestSerializer
 from . import error_code
@@ -11,7 +12,7 @@ class InviteFriend(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, receiver):
-        receiver = get_user_model().objects.get(pk=receiver)
+        receiver = get_object_or_404(get_user_model(), pk=receiver)
         sender = request.user
 
         created = FriendRequest.invite(sender=sender, receiver=receiver).get('created')
@@ -26,9 +27,10 @@ class AcceptFriend(APIView):
 
     def post(self, request, sender):
         receiver = request.user
-        sender = get_user_model().objects.get(pk=sender)
-        if FriendRequest.objects.filter(sender=sender, receiver=receiver).exists():
-            FriendRequest.objects.get(sender=sender, receiver=receiver).accept()
+        sender = get_object_or_404(get_user_model(), pk=sender)
+
+        friend_request = get_object_or_404(FriendRequest, sender=sender, receiver=receiver)
+        friend_request.accept()
 
         return Response(status=200)
 
@@ -36,36 +38,40 @@ class AcceptFriend(APIView):
 class RejectFriend(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, sender):
-
-        sender = get_user_model().objects.get(pk=sender)
+    def delete(self, request, sender):
+        sender = get_object_or_404(get_user_model(), pk=sender)
         receiver = request.user
-        if FriendRequest.objects.filter(sender=sender, receiver=receiver).exists():
-            FriendRequest.objects.get(sender=sender, receiver=receiver).decline()
 
-        return Response(status=200)
+        friend_request = get_object_or_404(FriendRequest, sender=sender, receiver=receiver)
+        friend_request.decline()
+
+        return Response(status=204)
 
 
 class CancelRequest(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, receiver):
-        receiver = get_user_model().objects.get(pk=receiver)
+        receiver = get_object_or_404(get_user_model(), pk=receiver)
         sender = request.user
-        if FriendRequest.objects.filter(sender=sender, receiver=receiver).exists():
-            FriendRequest.objects.get(sender=sender, receiver=receiver).decline()
 
-        return Response(status=200)
+        friend_request = get_object_or_404(FriendRequest, sender=sender, receiver=receiver)
+        friend_request.decline()
+
+        return Response(status=204)
 
 
 class RemoveFriend(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, friend):
-        friend = get_user_model().objects.get(pk=friend)
+        friend = get_object_or_404(get_user_model(), pk=friend)
         user = request.user
 
         user_friend_list = FriendList.objects.get(owner=user)
+
+        if not user_friend_list.is_friend(friend):
+            return Response(error_code.IS_NOT_FRIEND, status=400)
 
         user_friend_list.unfriend(friend)
         return Response(status=204)

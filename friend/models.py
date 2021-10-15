@@ -42,8 +42,7 @@ class FriendRequest(models.Model):
         if receiver == sender:
             return {"created": False}
 
-        user_friend_list, created = FriendList.objects.get_or_create(
-            owner=sender)
+        user_friend_list = FriendList.objects.get(owner=sender)
 
         if user_friend_list.is_friend(receiver):
             return {"created": False}

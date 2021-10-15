@@ -43,7 +43,7 @@ class GetChatRoomMessages(APIView):
             if not Message.objects.filter(pk=last_message).exists():
                 return Response(error_code.NO_LAST_MESSAGE, status=400)
 
-            last_message = Message.objects.get(pk=last_message)
+            last_message = get_object_or_404(Message, pk=last_message)
             qs = group.messages.filter(created_at__gte=last_message.created_at)[offset:limit]
         else:
             qs = group.messages.all()[offset:limit]
@@ -57,8 +57,14 @@ class GetChatRoomMessages(APIView):
 
 
 class GetChatRoomInfo(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, chat_room_pk):
         chat_room = get_object_or_404(ChatRoom, pk=chat_room_pk)
+
+        if request.user not in chat_room.users.all():
+            return Response(error_code.USER_NOT_MEMBER, status=403)
+
         serializer = GroupSerializer(chat_room, context={'request': request})
         return Response(serializer.data)
 
@@ -79,7 +85,7 @@ class CreateRoom(APIView):
         chat_room.users.add(request.user)
         chat_room.creators.add(request.user)
 
-        serializer = GroupSerializer(chat_room)
+        serializer = GroupSerializer(chat_room, context={'request': request})
 
         return Response(serializer.data, status=201)
 
@@ -106,7 +112,7 @@ class InviteUser(APIView):
         if request.data.get('user') is None:
             return Response(error_code.USER_IS_NONE)
 
-        receiver = get_user_model().objects.get(pk=request.data.get('user'))
+        receiver = get_object_or_404(get_user_model(), pk=request.data.get('user'))
 
         if receiver == request.user:
             return Response(error_code.CANT_INVITE_YOURSELF, status=400)
@@ -137,7 +143,7 @@ class CancelRequest(APIView):
         if not get_user_model().objects.filter(pk=request.data.get('user')).exists():
             return Response(error_code.NO_USER_WITH_PK, status=400)
 
-        receiver = get_user_model().objects.get(pk=request.data.get('user'))
+        receiver = get_object_or_404(get_user_model(), pk=request.data.get('user'))
 
         if not ChatroomInvitation.objects.filter(receiver=receiver, chatroom=chatroom).exists():
             return Response(error_code.INVITATION_DOESNT_EXISTS, status=400)
@@ -159,7 +165,7 @@ class AcceptRequest(APIView):
         if not ChatroomInvitation.objects.filter(chatroom=chatroom, receiver=request.user).exists():
             return Response(error_code.INVITATION_DOESNT_EXISTS)
 
-        invitation = ChatroomInvitation.objects.get(chatroom=chatroom, receiver=request.user)
+        invitation = get_object_or_404(ChatroomInvitation, chatroom=chatroom, receiver=request.user)
 
         invitation.accept()
 
@@ -175,12 +181,58 @@ class RejectRequest(APIView):
         if not ChatroomInvitation.objects.filter(chatroom=chatroom, receiver=request.user).exists():
             return Response(error_code.INVITATION_DOESNT_EXISTS)
 
-        invitation = ChatroomInvitation.objects.get(chatroom=chatroom,
-                                                    receiver=request.user)
+        invitation = get_object_or_404(ChatroomInvitation, chatroom=chatroom, receiver=request.user)
 
         invitation.decline()
 
         return Response(status=204)
+
+
+class AddAdmin(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, chatroom_pk):
+        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
+
+        if request.user not in chatroom.creators.all():
+            return Response(error_code.USER_NOT_ADMIN, status=403)
+
+        user = request.data.get('user')
+
+        user = get_object_or_404(get_user_model(), pk=user)
+
+        if user not in chatroom.users.all():
+            return Response(error_code.PK_USER_NOT_MEMBER, status=400)
+
+        chatroom.creators.add(user)
+        chatroom.save()
+
+        return Response(status=200)
+
+
+class DeleteAdmin(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, chatroom_pk):
+        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
+
+        if request.user not in chatroom.creators.all():
+            return Response(error_code.USER_NOT_ADMIN, status=403)
+
+        user = request.data.get('user')
+
+        user = get_object_or_404(get_user_model(), pk=user)
+
+        if user not in chatroom.creators.all():
+            return Response(error_code.PK_USER_NOT_ADMIN, status=400)
+
+        if len(chatroom.creators.all()) <= 1:
+            return Response(error_code.TOO_LESS_CREATORS, status=400)
+
+        chatroom.creators.remove(user)
+        chatroom.save()
+
+        return Response(status=200)
 
 
 class SearchForChatroomUser(APIView):

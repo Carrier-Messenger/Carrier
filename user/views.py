@@ -201,8 +201,11 @@ class Suicide(APIView):
 
 class Authenticate(APIView):
     def get(self, request):
+        authenticated = request.user.is_authenticated
         content = {'authenticated': request.user.is_authenticated}
-        return Response(content)
+        if authenticated:
+            return Response(content, 200)
+        return Response(content, 401)
 
 
 class AddProfilePicture(APIView):
