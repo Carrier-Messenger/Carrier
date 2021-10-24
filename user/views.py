@@ -216,6 +216,10 @@ class AddProfilePicture(APIView):
         user = request.user
         if request.FILES.get('pfp') is not None:
             img = request.FILES.get('pfp')
+
+            if img.name.split('.')[-1] not in ['jpg', 'jpeg', 'png']:
+                return Response(error_code.INVALID_EXTENSION, status=400)
+
             cut(img, user)
             return Response(status=201)
         return Response(error_code.NO_PFP, status=400)
