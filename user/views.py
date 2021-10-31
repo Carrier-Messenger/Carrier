@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db.models.functions import Concat
-from django.db.models import Value
+from django.db.models import Value, Q
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
@@ -63,7 +63,7 @@ class CreateUser(APIView):
             if 'This password is too commons.' in e:
                 return Response(error_code.PASSWORD_TOO_COMMON, status=400)
             if 'This password is too short. It must contain at least 8 characters.' in e:
-                return Response(error_code.PASSWORD_TOO_SHORT)
+                return Response(error_code.PASSWORD_TOO_SHORT, status=400)
             if 'This password is entirely numeric.' in e:
                 return Response(error_code.PASSWORD_IS_NUMERIC, status=400)
 
@@ -111,7 +111,7 @@ class GetUserByName(APIView):
             queryset = get_user_model().objects.annotate(
                 fullname=Concat('first_name', Value(' '), 'last_name'))
 
-            users = queryset.filter(fullname__startswith=name)[offset:limit]
+            users = queryset.filter(Q(fullname__startswith=name) | Q(username__contains=name))[offset:limit]
 
             serializer = FriendSerializer(users, many=True, context={'request': request})
             return Response(serializer.data)
@@ -137,6 +137,12 @@ class EditUser(APIView):
                 validate_email(email)
             except ValidationError:
                 return Response(error_code.INVALID_EMAIL, status=400)
+
+            if email == user.email:
+                return Response(error_code.ALREADY_YOUR_EMAIL, status=400)
+
+            if get_user_model().objects.filter(email=email).exists():
+                return Response(error_code.EMAIL_EXISTS, status=400)
 
             request.user.change_email(email)
 

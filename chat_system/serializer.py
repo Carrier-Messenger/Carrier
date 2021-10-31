@@ -8,6 +8,8 @@ class ChatroomUserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField()
     is_invited = serializers.SerializerMethodField()
     is_member = serializers.SerializerMethodField()
+    is_admin = serializers.SerializerMethodField()
+    is_me = serializers.SerializerMethodField()
 
     class Meta:
         model = get_user_model()
@@ -18,7 +20,9 @@ class ChatroomUserSerializer(serializers.ModelSerializer):
                   'full_name',
                   'pfp',
                   'is_invited',
-                  'is_member']
+                  'is_member',
+                  'is_admin',
+                  'is_me']
 
     def get_is_invited(self, user):
         chatroom = self.context.get('chatroom')
@@ -27,6 +31,14 @@ class ChatroomUserSerializer(serializers.ModelSerializer):
     def get_is_member(self, user):
         chatroom = self.context.get('chatroom')
         return user in chatroom.users.all()
+
+    def get_is_admin(self, user):
+        chatroom = self.context.get('chatroom')
+        return user in chatroom.creators.all()
+
+    def get_is_me(self, user):
+        request = self.context.get('request')
+        return request.user == user
 
 
 class MessageSerializer(serializers.ModelSerializer):

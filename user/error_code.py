@@ -19,3 +19,4 @@ USER_ALREADY_ACTIVE = {'error_code': 'USER-17', 'message': 'You are already acti
 INVALID_EMAIL = {'error_code': 'USER-18', 'message': 'This is not a valid email address'}
 NO_EMAIL_CODE = {'error_code': 'USER-19', 'message': 'You have not changed your email yet'}
 INVALID_EXTENSION = {'error_code': 'USER-20', 'message': 'This file is not image'}
+ALREADY_YOUR_EMAIL = {'error_code': 'USER-21', 'message': 'This already is your e-mail'}

@@ -82,6 +82,6 @@ class InvitesToMe(APIView):
 
     def get(self, request):
         invites = FriendRequest.objects.filter(receiver=request.user)
-        serializer = FriendRequestSerializer(invites, many=True, read_only=True)
+        serializer = FriendRequestSerializer(invites, many=True, read_only=True, context={'request': request})
 
         return Response(serializer.data)

@@ -29,7 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_friend_type(self, user):
         request_user = self.context.get('request').user
         if not request_user.is_authenticated:
-            return False
+            return "none"
 
         if FriendRequest.objects.filter(sender=user, receiver=request_user).exists():
             return "requested"

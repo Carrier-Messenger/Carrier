@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Value
+from django.db.models import Value, Q
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -44,9 +44,9 @@ class GetChatRoomMessages(APIView):
                 return Response(error_code.NO_LAST_MESSAGE, status=400)
 
             last_message = get_object_or_404(Message, pk=last_message)
-            qs = group.messages.filter(created_at__gte=last_message.created_at)[offset:limit]
+            qs = group.messages.filter(created_at__lte=last_message.created_at).order_by('-created_at')[offset:limit]
         else:
-            qs = group.messages.all()[offset:limit]
+            qs = group.messages.all().order_by('-created_at')[offset:limit]
 
         serializer = MessageSerializer(qs,
                                        many=True,
@@ -59,8 +59,8 @@ class GetChatRoomMessages(APIView):
 class GetChatRoomInfo(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, chat_room_pk):
-        chat_room = get_object_or_404(ChatRoom, pk=chat_room_pk)
+    def get(self, request, chatroom_pk):
+        chat_room = get_object_or_404(ChatRoom, pk=chatroom_pk)
 
         if request.user not in chat_room.users.all():
             return Response(error_code.USER_NOT_MEMBER, status=403)
@@ -128,10 +128,40 @@ class InviteUser(APIView):
         return Response(status=201)
 
 
+class RemoveUser(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, chatroom_pk):
+        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
+
+        if request.user not in chatroom.creators.all():
+            return Response(error_code.USER_NOT_ADMIN, status=403)
+
+        if request.data.get('user') is None:
+            return Response(error_code.USER_IS_NONE)
+
+        user = get_object_or_404(get_user_model(), pk=request.data.get('user'))
+
+        if user == request.user:
+            return Response(error_code.CANT_REMOVE_YOURSELF, status=400)
+
+        if request.data.get('user') in chatroom.users.all():
+            return Response(error_code.USER_NOT_MEMBER, status=400)
+
+        chatroom.users.remove(user)
+
+        if user in chatroom.creators.all():
+            chatroom.creators.remove(user)
+
+        chatroom.save()
+
+        return Response(status=201)
+
+
 class CancelRequest(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, chatroom_pk):
+    def delete(self, request, chatroom_pk):
         chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
 
         if request.user not in chatroom.creators.all():
@@ -188,6 +218,40 @@ class RejectRequest(APIView):
         return Response(status=204)
 
 
+class LeaveChatroom(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, chatroom_pk):
+        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
+        user = request.user
+
+        if user not in chatroom.users.all():
+            return Response(error_code.USER_NOT_MEMBER, status=400)
+
+        chatroom.users.remove(user)
+
+        if user in chatroom.creators.all():
+            chatroom.creators.remove(user)
+
+        chatroom.save()
+
+        return Response(status=204)
+
+
+class DeleteChatRoom(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, chatroom_pk):
+        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
+
+        if request.user not in chatroom.creators.all():
+            return Response(error_code.USER_NOT_ADMIN, status=400)
+
+        chatroom.delete()
+
+        return Response(status=204)
+
+
 class AddAdmin(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -226,9 +290,6 @@ class DeleteAdmin(APIView):
         if user not in chatroom.creators.all():
             return Response(error_code.PK_USER_NOT_ADMIN, status=400)
 
-        if len(chatroom.creators.all()) <= 1:
-            return Response(error_code.TOO_LESS_CREATORS, status=400)
-
         chatroom.creators.remove(user)
         chatroom.save()
 
@@ -251,7 +312,7 @@ class SearchForChatroomUser(APIView):
         queryset = get_user_model().objects.annotate(
             fullname=Concat('first_name', Value(' '), 'last_name'))
 
-        users = queryset.filter(fullname__contains=name)[offset:limit]
+        users = queryset.filter(Q(fullname__startswith=name) | Q(username__contains=name))[offset:limit]
 
         serializer = ChatroomUserSerializer(users, many=True, context={'request': request, 'chatroom': chatroom})
         return Response(serializer.data)

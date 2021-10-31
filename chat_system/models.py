@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 class ChatRoom(models.Model):
     creators = models.ManyToManyField(get_user_model(), related_name='my_groups')
-    image = models.ImageField(upload_to="chatrooms/", default="chatroom/default.png")
+    image = models.ImageField(upload_to="chatrooms/", default="chatrooms/default.png")
     users = models.ManyToManyField(get_user_model(), related_name='chatrooms')
     name = models.CharField(max_length=75, blank=False, unique=True)
 
