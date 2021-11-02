@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from itertools import chain
 from Carrier.general_functions import validate_offset_and_limit
 from . import error_code
 from .models import ChatRoom, Message, ChatroomInvitation
@@ -16,8 +17,15 @@ class GetUserChatRooms(APIView):
 
     def get(self, request):
         user = request.user
-        groups = ChatRoom.get_group_by_user(user=user)
-        serializer = GroupSerializer(groups, many=True, context={'request': request})
+        not_none_chats = filter(
+            lambda chat: True if chat.last_message is not None else False, ChatRoom.get_group_by_user(user=user)
+        )
+        none_chats = filter(
+            lambda chat: False if chat.last_message is not None else True, ChatRoom.get_group_by_user(user=user)
+        )
+        groups = reversed(sorted(not_none_chats,  key=lambda chat: chat.last_message.created_at))
+        all_groups = list(chain(groups, none_chats))
+        serializer = GroupSerializer(all_groups, many=True, context={'request': request})
         return Response(serializer.data)
 
 

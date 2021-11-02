@@ -85,7 +85,6 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
-    'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S",
 }
 
 ROOT_URLCONF = 'Carrier.urls'
