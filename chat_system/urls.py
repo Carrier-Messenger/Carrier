@@ -4,7 +4,7 @@ from .views import *
 
 urlpatterns = [
     path('create/', CreateRoom.as_view()),
-    path('get-user-groups/', GetUserChatRoom.as_view()),
+    path('get-user-groups/', GetUserChatRooms.as_view()),
     path('<int:room_pk>/get-messages/', GetChatRoomMessages.as_view()),
     path('invitations-to-me/', InvitesToMe.as_view()),
     path('<int:chatroom_pk>/', GetChatRoomInfo.as_view()),

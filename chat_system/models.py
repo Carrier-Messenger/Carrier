@@ -8,6 +8,13 @@ class ChatRoom(models.Model):
     users = models.ManyToManyField(get_user_model(), related_name='chatrooms')
     name = models.CharField(max_length=75, blank=False, unique=True)
 
+    @property
+    def last_message(self):
+        if len(self.messages.all()) == 0:
+            return None
+
+        return self.messages.all().order_by('-created_at').first()
+
     def connect_user(self, user):
         if user not in self.users.all():
             self.user.add(user)

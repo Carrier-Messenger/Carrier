@@ -71,6 +71,7 @@ class GroupSerializer(serializers.ModelSerializer):
     users = FriendSerializer(many=True, read_only=True)
     creators = FriendSerializer(many=True, read_only=True)
     is_admin = serializers.SerializerMethodField()
+    last_message = MessageSerializer(allow_null=True)
 
     class Meta:
         model = ChatRoom

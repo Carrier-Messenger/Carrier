@@ -11,7 +11,7 @@ from .models import ChatRoom, Message, ChatroomInvitation
 from .serializer import GroupSerializer, MessageSerializer, ChatRoomInvitationSerializer, ChatroomUserSerializer
 
 
-class GetUserChatRoom(APIView):
+class GetUserChatRooms(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -234,6 +234,9 @@ class LeaveChatroom(APIView):
             chatroom.creators.remove(user)
 
         chatroom.save()
+
+        if len(chatroom.users.all()) <= 0:
+            chatroom.delete()
 
         return Response(status=204)
 
