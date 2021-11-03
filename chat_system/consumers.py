@@ -38,6 +38,10 @@ class ChatConsumer(WebsocketConsumer):
 
         user = self.scope['user']
         chat_room = ChatRoom.objects.get(pk=self.room_name)
+
+        if not message:
+            return
+
         message = Message.objects.create(author=user, chat_room=chat_room, content=message).pk
 
         # Send message to room group

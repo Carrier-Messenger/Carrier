@@ -6,7 +6,7 @@ class ChatRoom(models.Model):
     creators = models.ManyToManyField(get_user_model(), related_name='my_groups')
     image = models.ImageField(upload_to="chatrooms/", default="chatrooms/default.png")
     users = models.ManyToManyField(get_user_model(), related_name='chatrooms')
-    name = models.CharField(max_length=75, blank=False, unique=True)
+    name = models.CharField(max_length=75, blank=False)
 
     @property
     def last_message(self):
@@ -45,7 +45,7 @@ class ChatRoom(models.Model):
 class Message(models.Model):
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
-    content = models.TextField(max_length=2000, blank=False)
+    content = models.TextField(max_length=2000, blank=False, null=False)
     created_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

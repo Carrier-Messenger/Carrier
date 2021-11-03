@@ -86,9 +86,6 @@ class CreateRoom(APIView):
         if name is None or not name:
             return Response(error_code.NO_CHATROOM_NAME, status=400)
 
-        if ChatRoom.objects.filter(name=name).exists():
-            return Response(error_code.CHATROOM_ALREADY_EXISTS, status=400)
-
         chat_room = ChatRoom.objects.create(name=name)
         chat_room.users.add(request.user)
         chat_room.creators.add(request.user)

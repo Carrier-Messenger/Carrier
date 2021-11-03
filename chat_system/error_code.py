@@ -1,6 +1,6 @@
 NO_CHATROOM_NAME = {'error_code': 'CHAT-1', 'message': 'name is none'}
 NO_ROOM_PK = {'error_code': 'CHAT-2', 'message': 'room_pk is none'}
-CHATROOM_ALREADY_EXISTS = {'error_code': 'CHAT-3', 'message': 'Chatroom with this name already exists'}
+# CHATROOM_ALREADY_EXISTS = {'error_code': 'CHAT-3', 'message': 'Chatroom with this name already exists'}
 NO_LAST_MESSAGE = {'error_code': 'CHAT-4', 'message': 'Message with pk last_message does not exists'}
 LAST_MESSAGE_INT = {'error_code': 'CHAT-5', 'message': 'last_message is not int'}
 USER_NOT_ADMIN = {'error_code': 'CHAT-6', 'message': 'User (you) is not chatroom admin'}
