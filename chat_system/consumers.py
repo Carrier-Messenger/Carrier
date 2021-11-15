@@ -1,8 +1,9 @@
 import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from .models import Message, ChatRoom
+from .models import Message, ChatRoom, MessageImage
 from .serializer import WSMessageSerializer
+from .base64 import decode_base64_to_image
 
 
 class ChatConsumer(WebsocketConsumer):
@@ -32,24 +33,27 @@ class ChatConsumer(WebsocketConsumer):
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json.get('message')
+        images = text_data_json.get('images')
 
-        if message is None:
-            self.disconnect()
+        if not message and not images:
+            return
 
         user = self.scope['user']
         chat_room = ChatRoom.objects.get(pk=self.room_name)
 
-        if not message:
-            return
+        message = Message.objects.create(author=user, chat_room=chat_room, content=message)
+        message_pk = message.pk
 
-        message = Message.objects.create(author=user, chat_room=chat_room, content=message).pk
+        if images is not None and isinstance(images, list):
+            for image in images:
+                MessageImage.objects.create(author=user, message=message, image=decode_base64_to_image(image))
 
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'message': message
+                'message': message_pk
             }
         )
 
