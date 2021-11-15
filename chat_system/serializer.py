@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import ChatRoom, Message, ChatroomInvitation
+from .models import ChatRoom, Message, ChatroomInvitation, MessageImage
 from friend.serializer import FriendSerializer
 
 
@@ -41,13 +41,22 @@ class ChatroomUserSerializer(serializers.ModelSerializer):
         return request.user == user
 
 
+class MessageImageSerializer(serializers.ModelSerializer):
+    url = serializers.ImageField(use_url=True, source='image')
+
+    class Meta:
+        model = MessageImage
+        fields = ['url']
+
+
 class MessageSerializer(serializers.ModelSerializer):
     author = FriendSerializer()
     is_mine = serializers.SerializerMethodField()
+    images = MessageImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Message
-        fields = ['id', 'author', 'content', 'created_at', 'is_mine']
+        fields = ['id', 'author', 'content', 'created_at', 'is_mine', 'images']
 
     def get_is_mine(self, message):
         request = self.context.get('request')
@@ -57,10 +66,11 @@ class MessageSerializer(serializers.ModelSerializer):
 class WSMessageSerializer(serializers.ModelSerializer):
     author = FriendSerializer()
     is_mine = serializers.SerializerMethodField()
+    images = MessageImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Message
-        fields = ['id', 'author', 'content', 'created_at', 'is_mine']
+        fields = ['id', 'author', 'content', 'created_at', 'is_mine', 'images']
 
     def get_is_mine(self, message):
         user = self.context.get('user')

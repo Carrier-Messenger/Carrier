@@ -52,6 +52,15 @@ class Message(models.Model):
         return self.content
 
 
+class MessageImage(models.Model):
+    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to="messages/")
+
+    def __str__(self):
+        return self.image.url
+
+
 class ChatroomInvitation(models.Model):
     chatroom = models.ForeignKey(ChatRoom, related_name='invitations', on_delete=models.CASCADE)
     sender = models.ForeignKey(get_user_model(), related_name='chatroom_invitation_from_me', on_delete=models.CASCADE)
