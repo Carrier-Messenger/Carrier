@@ -16,7 +16,6 @@ class ChatroomUserSerializer(FriendSerializer):
                   'full_name',
                   'pfp',
                   'friends',
-                  'friend_type',
                   'is_admin']
 
     def get_is_admin(self, user):
