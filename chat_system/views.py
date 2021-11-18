@@ -9,7 +9,7 @@ from itertools import chain
 from Carrier.general_functions import validate_offset_and_limit
 from . import error_code
 from .models import ChatRoom, Message, ChatroomInvitation
-from .serializer import GroupSerializer, MessageSerializer, ChatRoomInvitationSerializer, ChatroomUserSerializer
+from .serializer import GroupSerializer, MessageSerializer, ChatRoomInvitationSerializer, ChatroomUserSearchSerializer
 
 
 class GetUserChatRooms(APIView):
@@ -322,5 +322,5 @@ class SearchForChatroomUser(APIView):
 
         users = queryset.filter(Q(fullname__startswith=name) | Q(username__contains=name))[offset:limit]
 
-        serializer = ChatroomUserSerializer(users, many=True, context={'request': request, 'chatroom': chatroom})
+        serializer = ChatroomUserSearchSerializer(users, many=True, context={'request': request, 'chatroom': chatroom})
         return Response(serializer.data)

@@ -4,7 +4,27 @@ from .models import ChatRoom, Message, ChatroomInvitation, MessageImage
 from friend.serializer import FriendSerializer
 
 
-class ChatroomUserSerializer(serializers.ModelSerializer):
+class ChatroomUserSerializer(FriendSerializer):
+    is_admin = serializers.SerializerMethodField()
+
+    class Meta:
+        model = get_user_model()
+        fields = ['id',
+                  'username',
+                  'first_name',
+                  'last_name',
+                  'full_name',
+                  'pfp',
+                  'friends',
+                  'friend_type',
+                  'is_admin']
+
+    def get_is_admin(self, user):
+        chatroom = self.context.get('chatroom')
+        return user in chatroom.creators.all()
+
+
+class ChatroomUserSearchSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField()
     is_invited = serializers.SerializerMethodField()
     is_member = serializers.SerializerMethodField()
@@ -78,8 +98,8 @@ class WSMessageSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    users = FriendSerializer(many=True, read_only=True)
-    creators = FriendSerializer(many=True, read_only=True)
+    users = serializers.SerializerMethodField()
+    creators = serializers.SerializerMethodField()
     is_admin = serializers.SerializerMethodField()
     last_message = MessageSerializer(allow_null=True)
 
@@ -90,6 +110,16 @@ class GroupSerializer(serializers.ModelSerializer):
     def get_is_admin(self, group):
         request = self.context.get('request')
         return request is not None and request.user in group.creators.all()
+
+    def get_users(self, group):
+        context = {'chatroom': group}
+        context.update(self.context)
+        return ChatroomUserSerializer(group.users.all(), many=True, read_only=True, context=context).data
+
+    def get_creators(self, group):
+        context = {'chatroom': group}
+        context.update(self.context)
+        return ChatroomUserSerializer(group.creators.all(), many=True, read_only=True, context=context).data
 
 
 class SilentGroupSerializer(serializers.ModelSerializer):
