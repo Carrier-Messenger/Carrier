@@ -5,11 +5,14 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import uuid
+from PIL import Image
 from itertools import chain
 from Carrier.general_functions import validate_offset_and_limit
 from . import error_code
 from .models import ChatRoom, Message, ChatroomInvitation
 from .serializer import GroupSerializer, MessageSerializer, ChatRoomInvitationSerializer, ChatroomUserSearchSerializer
+from user.imgs import cut
 
 
 class GetUserChatRooms(APIView):
@@ -324,3 +327,31 @@ class SearchForChatroomUser(APIView):
 
         serializer = ChatroomUserSearchSerializer(users, many=True, context={'request': request, 'chatroom': chatroom})
         return Response(serializer.data)
+
+
+class AddChatRoomPicture(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, chatroom_pk):
+        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
+
+        if request.user not in chatroom.creators.all():
+            return Response(error_code.USER_NOT_ADMIN, status=403)
+
+        if not request.FILES.get('image'):
+            return Response(error_code.NO_PICTURE, status=400)
+
+        image = request.FILES.get('image')
+
+        if image.name.split('.')[-1] not in ['jpg', 'jpeg', 'png']:
+            return Response(error_code.INVALID_EXTENSION, status=400)
+
+        image = Image.open(image)
+
+        content_file = cut(image)
+        filename = f'{str(uuid.uuid4())[:12]}.{image.format.lower()}'
+
+        chatroom.image.save(filename, content_file)
+        chatroom.save()
+
+        return Response(status=201)

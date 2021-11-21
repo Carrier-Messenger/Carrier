@@ -9,6 +9,8 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+import uuid
+from PIL import Image
 from .serializer import UserSerializer, MeSerializer
 from friend.serializer import FriendSerializer
 from .imgs import cut
@@ -226,6 +228,12 @@ class AddProfilePicture(APIView):
             if img.name.split('.')[-1] not in ['jpg', 'jpeg', 'png']:
                 return Response(error_code.INVALID_EXTENSION, status=400)
 
-            cut(img, user)
+            img = Image.open(img)
+
+            content_file = cut(img)
+            filename = f'{str(uuid.uuid4())[:12]}.{img.format.lower()}'
+
+            user.pfp.save(filename, content_file)
+
             return Response(status=201)
         return Response(error_code.NO_PFP, status=400)

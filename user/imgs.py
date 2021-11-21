@@ -15,18 +15,16 @@ def crop_max_square(pil_img):
     return crop_center(pil_img, min(pil_img.size), min(pil_img.size))
 
 
-def cut(img, user):
-    filename = img.name
-    img = Image.open(img)
-
+def cut(img):
     img = img.convert('RGB')
 
-    img = crop_max_square(img).resize((256, 256), Image.LANCZOS)
+    img = crop_max_square(img).resize((512, 512), Image.LANCZOS)
 
     f = BytesIO()
     try:
         img.save(f, format='jpeg')
-        user.pfp.save(filename, ContentFile(f.getvalue()))
-        user.save()
+        # user.pfp.save(filename, ContentFile(f.getvalue()))
+        # user.save()
+        return ContentFile(f.getvalue())
     finally:
         f.close()

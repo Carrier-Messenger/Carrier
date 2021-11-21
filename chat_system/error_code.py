@@ -16,3 +16,5 @@ PK_USER_NOT_MEMBER = {'error_code': 'CHAT-14', 'message': 'User with pk user is 
 PK_USER_NOT_ADMIN = {'error_code': 'CHAT-15', 'message': 'User with pk user is not chatroom admin'}
 TOO_LESS_CREATORS = {'error_code': 'CHAT-16', 'message': 'There needs to be at least 1 creator'}
 CANT_REMOVE_YOURSELF = {'error_code': 'CHAT-17', 'message': 'You can not remove yourself'}
+INVALID_EXTENSION = {'error_code': 'CHAT-18', 'message': 'Invalid file extension'}
+NO_PICTURE = {'error_code': 'CHAT-19', 'message': 'image is none'}
