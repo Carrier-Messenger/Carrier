@@ -18,5 +18,6 @@ urlpatterns = [
     path('<int:chatroom_pk>/add-admin/', AddAdmin.as_view()),
     path('<int:chatroom_pk>/remove-admin/', DeleteAdmin.as_view()),
     path('<int:chatroom_pk>/delete/', DeleteChatRoom.as_view()),
-    path('<int:chatroom_pk>/add-picture/', AddChatRoomPicture.as_view())
+    path('<int:chatroom_pk>/add-picture/', AddChatRoomPicture.as_view()),
+    path('<int:chatroom_pk>/delete-message/', DeleteMessage.as_view())
 ]

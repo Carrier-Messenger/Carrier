@@ -28,7 +28,7 @@ class GetUser(APIView):
 
 
 class GetUserByID(APIView):
-    def get(self, request, pk=None):
+    def get(self, request, pk):
         query = get_object_or_404(get_user_model(), pk=pk)
         serializer = UserSerializer(query, context={'request': request})
         return Response(serializer.data)

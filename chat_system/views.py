@@ -329,6 +329,27 @@ class SearchForChatroomUser(APIView):
         return Response(serializer.data)
 
 
+class DeleteMessage(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, chatroom_pk):
+        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
+
+        message_pk = request.data.get('id')
+        message = get_object_or_404(Message, pk=message_pk)
+
+        if request.user not in chatroom.users.all():
+            return Response(error_code.USER_NOT_MEMBER, status=400)
+
+        if message.author != request.user:
+            return Response(error_code.USER_NOT_SENDER, status=400)
+
+        message.deleted = True
+        message.save()
+
+        return Response(status=204)
+
+
 class AddChatRoomPicture(APIView):
     permission_classes = [IsAuthenticated]
 

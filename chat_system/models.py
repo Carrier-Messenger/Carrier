@@ -43,10 +43,13 @@ class ChatRoom(models.Model):
 
 
 class Message(models.Model):
-    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
+    author = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages', max_length=2000)
     content = models.TextField(max_length=2000, blank=False, null=False)
     created_at = models.DateTimeField(auto_now=True)
+    deleted = models.BooleanField(default=False)
+
+    max_images = 100
 
     def __str__(self):
         return self.content

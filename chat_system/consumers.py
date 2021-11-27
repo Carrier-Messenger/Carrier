@@ -41,10 +41,20 @@ class ChatConsumer(WebsocketConsumer):
         user = self.scope['user']
         chat_room = ChatRoom.objects.get(pk=self.room_name)
 
+        if user not in chat_room.users.all():
+            self.disconnect()
+            return
+
+        if len(message) > Message._meta.get_field('content').max_length:
+            return
+
         message = Message.objects.create(author=user, chat_room=chat_room, content=message)
         message_pk = message.pk
 
         if images is not None and isinstance(images, list):
+            if len(images) > Message.max_images:
+                return
+
             for image in images:
                 MessageImage.objects.create(author=user, message=message, image=decode_base64_to_image(image))
 

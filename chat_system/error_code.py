@@ -18,3 +18,4 @@ TOO_LESS_CREATORS = {'error_code': 'CHAT-16', 'message': 'There needs to be at l
 CANT_REMOVE_YOURSELF = {'error_code': 'CHAT-17', 'message': 'You can not remove yourself'}
 INVALID_EXTENSION = {'error_code': 'CHAT-18', 'message': 'Invalid file extension'}
 NO_PICTURE = {'error_code': 'CHAT-19', 'message': 'image is none'}
+USER_NOT_SENDER = {'error_code': 'CHAT-20', 'message': 'User is not author of the message'}
