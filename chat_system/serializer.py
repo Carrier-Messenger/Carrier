@@ -77,7 +77,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'author', 'content', 'created_at', 'is_mine', 'images', 'deleted']
+        fields = ['id', 'author', 'content', 'created_at', 'is_mine', 'images', 'deleted', 'edited']
 
     def get_content(self, message):
         if message.deleted:
@@ -139,31 +139,12 @@ class WSFriendSerializer(serializers.ModelSerializer):
             return "none"
 
 
-class WSMessageSerializer(serializers.ModelSerializer):
+class WSMessageSerializer(MessageSerializer):
     author = WSFriendSerializer()
-    content = serializers.SerializerMethodField()
-    is_mine = serializers.SerializerMethodField()
-    images = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Message
-        fields = ['id', 'author', 'content', 'created_at', 'is_mine', 'images', 'deleted']
-
-    def get_content(self, message):
-        if message.deleted:
-            return ''
-
-        return message.content
 
     def get_is_mine(self, message):
         user = self.context.get('user')
         return user is not None and user == message.author
-
-    def get_images(self, message):
-        if message.deleted:
-            return []
-
-        return MessageImageSerializer(message.images, many=True, read_only=True).data
 
 
 class GroupSerializer(serializers.ModelSerializer):

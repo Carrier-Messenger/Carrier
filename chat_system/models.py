@@ -48,6 +48,7 @@ class Message(models.Model):
     content = models.TextField(max_length=2000, blank=False, null=False)
     created_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False)
+    edited = models.BooleanField(default=False)
 
     max_images = 100
 
