@@ -141,10 +141,18 @@ class WSFriendSerializer(serializers.ModelSerializer):
 
 class WSMessageSerializer(MessageSerializer):
     author = WSFriendSerializer()
+    action = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ['id', 'author', 'content', 'created_at', 'is_mine', 'images', 'deleted', 'edited', 'action']
 
     def get_is_mine(self, message):
         user = self.context.get('user')
         return user is not None and user == message.author
+
+    def get_action(self, message):
+        return self.context.get('action')
 
 
 class GroupSerializer(serializers.ModelSerializer):

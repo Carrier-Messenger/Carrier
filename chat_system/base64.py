@@ -14,7 +14,6 @@ def get_file_extension(file_name, decoded_file):
 
 
 def decode_base64_to_image(data):
-
     # Check if this is a base64 string
     if not isinstance(data, six.string_types):
         return

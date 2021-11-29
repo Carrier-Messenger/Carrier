@@ -3,6 +3,7 @@ from django.db.models import Value, Q
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import uuid
@@ -339,48 +340,6 @@ class EditChatRoom(APIView):
         if request.data.get('name') is not None:
             chatroom.name = request.data.get('name')
             chatroom.save()
-
-        return Response(status=204)
-
-
-class EditMessage(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, chatroom_pk, message_pk):
-        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
-
-        if request.user not in chatroom.users.all():
-            return Response(error_code.USER_NOT_MEMBER, status=403)
-
-        message = get_object_or_404(Message, pk=message_pk)
-
-        if message.author != request.user:
-            return Response(error_code.USER_NOT_SENDER, status=400)
-
-        if request.data.get('content') is not None:
-            message.content = request.data.get('content')
-            message.edited = True
-            message.save()
-
-        return Response(status=204)
-
-
-class DeleteMessage(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, chatroom_pk, message_pk):
-        chatroom = get_object_or_404(ChatRoom, pk=chatroom_pk)
-
-        message = get_object_or_404(Message, pk=message_pk)
-
-        if request.user not in chatroom.users.all():
-            return Response(error_code.USER_NOT_MEMBER, status=400)
-
-        if message.author != request.user:
-            return Response(error_code.USER_NOT_SENDER, status=400)
-
-        message.deleted = True
-        message.save()
 
         return Response(status=204)
 
