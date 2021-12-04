@@ -60,6 +60,11 @@ class CreateUser(APIView):
             return Response(error_code.USERNAME_EXISTS, status=400)
 
         try:
+            validate_email(email)
+        except ValidationError:
+            return Response(error_code.INVALID_EMAIL, status=400)
+
+        try:
             validate_password(password)
         except ValidationError as e:
             if 'This password is too commons.' in e:

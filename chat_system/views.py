@@ -3,7 +3,6 @@ from django.db.models import Value, Q
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import uuid
